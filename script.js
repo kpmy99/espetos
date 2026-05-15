@@ -41,7 +41,7 @@ function sendWhatsApp() {
     totalOrders++;
     localStorage.setItem('orderCount', totalOrders);
 
-    const phone = "5517996359526"; // COLOQUE SEU NÚMERO AQUI
+    const phone = "5517996359526"; 
     const url = `https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(message)}`;
     
     window.open(url, '_blank');
