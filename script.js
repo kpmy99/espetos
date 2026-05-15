@@ -15,7 +15,6 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-// Variáveis Globais
 let carrinho = [];
 
 // --- FUNÇÕES DE RENDERIZAÇÃO ---
@@ -51,17 +50,16 @@ window.renderAdminDashboard = function(produtos) {
 
 window.addToCart = function(name, price) {
     carrinho.push({ name, price });
-    document.getElementById('cart-count').innerText = carrinho.length;
+    const count = document.getElementById('cart-count');
+    if(count) count.innerText = carrinho.length;
 };
 
 window.sendWhatsApp = async function() {
     if (carrinho.length === 0) return alert("Carrinho vazio!");
 
-    // 1. Incrementa contador de pedidos
     const orderCountRef = ref(db, 'orderCount');
     await runTransaction(orderCountRef, (current) => (current || 0) + 1);
 
-    // 2. Monta mensagem
     let texto = "🔥 *Novo Pedido - Ramos Espetos* 🔥\n\n";
     let total = 0;
     carrinho.forEach(item => {
@@ -74,43 +72,26 @@ window.sendWhatsApp = async function() {
     window.open(`https://api.whatsapp.com/send?phone=${fone}&text=${encodeURIComponent(texto)}`);
     
     carrinho = []; 
-    document.getElementById('cart-count').innerText = 0;
+    const count = document.getElementById('cart-count');
+    if(count) count.innerText = 0;
 };
 
 // --- LOGICA DO ADM ---
 
 window.addProduct = function() {
-    const name = document.getElementById('p-name').value;
-
-
-window.addProduct = function() {
-    const name = document.getElementById('p-name').value;
-    const price = parseFloat(document.getElementById('p-price').value);
+    const nameInput = document.getElementById('p-name');
+    const priceInput = document.getElementById('p-price');
+    const name = nameInput.value;
+    const price = parseFloat(priceInput.value);
 
     if (name && !isNaN(price)) {
         const productsRef = ref(db, 'produtos');
-        // O push envia para o Firebase de forma persistente
-        push(productsRef, { 
-            name: name, 
-            price: price 
-        }).then(() => {
-            console.log("Dado gravado com sucesso no Firebase!");
-            document.getElementById('p-name').value = "";
-            document.getElementById('p-price').value = "";
-        }).catch((error) => {
-            console.error("Erro ao gravar:", error);
-            alert("Erro de permissão no banco de dados!");
-        });
-    } else {
-        alert("Por favor, insira um nome e um valor numérico válido.");
-    }
-};
-    const price = parseFloat(document.getElementById('p-price').value);
-
-    if (name && price) {
-        push(ref(db, 'produtos'), { name, price });
-        document.getElementById('p-name').value = "";
-        document.getElementById('p-price').value = "";
+        push(productsRef, { name, price })
+            .then(() => {
+                nameInput.value = "";
+                priceInput.value = "";
+            })
+            .catch((error) => alert("Erro: " + error.message));
     } else {
         alert("Preencha os campos corretamente!");
     }
@@ -123,24 +104,21 @@ window.deleteProduct = function(id) {
 };
 
 window.logout = function() {
-    localStorage.removeItem('auth');
-    localStorage.removeItem('auth_persistence');
+    localStorage.clear();
     window.location.href = 'admin.html';
 };
 
-// --- INICIALIZAÇÃO E ESCUTA DO BANCO ---
+// --- ESCUTA DO BANCO EM TEMPO REAL ---
 
-const productsRef = ref(db, 'produtos');
-onValue(productsRef, (snapshot) => {
+onValue(ref(db, 'produtos'), (snapshot) => {
     const data = snapshot.val();
     const lista = data ? Object.keys(data).map(key => ({ id: key, ...data[key] })) : [];
     
-    if (document.getElementById('menu-container')) renderCustomerMenu(lista);
-    if (document.getElementById('admin-menu-list')) renderAdminDashboard(lista);
+    renderCustomerMenu(lista);
+    renderAdminDashboard(lista);
 });
 
-const ordersRef = ref(db, 'orderCount');
-onValue(ordersRef, (snapshot) => {
+onValue(ref(db, 'orderCount'), (snapshot) => {
     const totalElem = document.getElementById('total-orders');
     if (totalElem) totalElem.innerText = snapshot.val() || 0;
 });
