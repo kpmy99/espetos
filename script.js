@@ -81,6 +81,30 @@ window.sendWhatsApp = async function() {
 
 window.addProduct = function() {
     const name = document.getElementById('p-name').value;
+
+
+window.addProduct = function() {
+    const name = document.getElementById('p-name').value;
+    const price = parseFloat(document.getElementById('p-price').value);
+
+    if (name && !isNaN(price)) {
+        const productsRef = ref(db, 'produtos');
+        // O push envia para o Firebase de forma persistente
+        push(productsRef, { 
+            name: name, 
+            price: price 
+        }).then(() => {
+            console.log("Dado gravado com sucesso no Firebase!");
+            document.getElementById('p-name').value = "";
+            document.getElementById('p-price').value = "";
+        }).catch((error) => {
+            console.error("Erro ao gravar:", error);
+            alert("Erro de permissão no banco de dados!");
+        });
+    } else {
+        alert("Por favor, insira um nome e um valor numérico válido.");
+    }
+};
     const price = parseFloat(document.getElementById('p-price').value);
 
     if (name && price) {
