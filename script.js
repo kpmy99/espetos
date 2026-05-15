@@ -1,8 +1,6 @@
-// Importe os módulos necessários do Firebase
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getDatabase, ref, set, onValue, push, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+import { getDatabase, ref, set, onValue, push, remove, runTransaction } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-// COLE AQUI AS SUAS CONFIGURAÇÕES DO FIREBASE
 const firebaseConfig = {
     apiKey: "AIzaSyDGJl7zSPUBfGNHXJtApjGcZNrtiIV1yik",
     authDomain: "espeto-ec8ec.firebaseapp.com",
@@ -14,105 +12,111 @@ const firebaseConfig = {
     measurementId: "G-XTVRQQ2TWJ"
 };
 
-// Inicializa o Firebase
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-// --- FUNÇÕES DE PERSISTÊNCIA ---
+// Variáveis Globais
+let carrinho = [];
 
-// Carregar Produtos em Tempo Real (Serve para Cliente e ADM)
-function carregarProdutos() {
-    const productsRef = ref(db, 'produtos');
-    onValue(productsRef, (snapshot) => {
-        const data = snapshot.val();
-        const listaProdutos = data ? Object.keys(data).map(key => ({ id: key, ...data[key] })) : [];
-        
-        // Se estiver na página do cliente, renderiza menu cliente
-        if (document.getElementById('menu-container')) {
-            renderCustomerMenu(listaProdutos);
-        }
-        // Se estiver na página do adm, renderiza menu adm
-        if (document.getElementById('admin-menu-list')) {
-            renderAdminDashboard(listaProdutos);
-        }
+// --- FUNÇÕES DE RENDERIZAÇÃO ---
+
+window.renderCustomerMenu = function(produtos) {
+    const container = document.getElementById('menu-container');
+    if (!container) return;
+    
+    container.innerHTML = produtos.map(p => `
+        <div class="product-card">
+            <div class="product-info">
+                <h3>${p.name}</h3>
+                <span>R$ ${p.price.toFixed(2)}</span>
+            </div>
+            <button class="btn-add" onclick="addToCart('${p.name}', ${p.price})">Adicionar</button>
+        </div>
+    `).join('');
+};
+
+window.renderAdminDashboard = function(produtos) {
+    const list = document.getElementById('admin-menu-list');
+    if (!list) return;
+
+    list.innerHTML = produtos.map(p => `
+        <div class="admin-item">
+            <span>${p.name} - R$ ${p.price.toFixed(2)}</span>
+            <button class="btn-remove" onclick="deleteProduct('${p.id}')">Excluir</button>
+        </div>
+    `).join('');
+};
+
+// --- LOGICA DO CLIENTE ---
+
+window.addToCart = function(name, price) {
+    carrinho.push({ name, price });
+    document.getElementById('cart-count').innerText = carrinho.length;
+};
+
+window.sendWhatsApp = async function() {
+    if (carrinho.length === 0) return alert("Carrinho vazio!");
+
+    // 1. Incrementa contador de pedidos
+    const orderCountRef = ref(db, 'orderCount');
+    await runTransaction(orderCountRef, (current) => (current || 0) + 1);
+
+    // 2. Monta mensagem
+    let texto = "🔥 *Novo Pedido - Ramos Espetos* 🔥\n\n";
+    let total = 0;
+    carrinho.forEach(item => {
+        texto += `• ${item.name} - R$ ${item.price.toFixed(2)}\n`;
+        total += item.price;
     });
-}
+    texto += `\n*Total: R$ ${total.toFixed(2)}*`;
+    
+    const fone = "5517996359526";
+    window.open(`https://api.whatsapp.com/send?phone=${fone}&text=${encodeURIComponent(texto)}`);
+    
+    carrinho = []; 
+    document.getElementById('cart-count').innerText = 0;
+};
 
-// Carregar Métricas (Apenas ADM)
-function carregarMetricas() {
-    const ordersRef = ref(db, 'orderCount');
-    onValue(ordersRef, (snapshot) => {
-        const count = snapshot.val() || 0;
-        const totalElem = document.getElementById('total-orders');
-        if (totalElem) totalElem.innerText = count;
-    });
-}
+// --- LOGICA DO ADM ---
 
-// Adicionar Produto (ADM)
 window.addProduct = function() {
     const name = document.getElementById('p-name').value;
     const price = parseFloat(document.getElementById('p-price').value);
 
     if (name && price) {
-        const productsRef = ref(db, 'produtos');
-        push(productsRef, { name, price });
+        push(ref(db, 'produtos'), { name, price });
         document.getElementById('p-name').value = "";
         document.getElementById('p-price').value = "";
-        alert("Item salvo no Banco de Dados!");
+    } else {
+        alert("Preencha os campos corretamente!");
     }
-}
-
-// Remover Produto (ADM)
-window.deleteProduct = function(id) {
-    remove(ref(db, `produtos/${id}`));
-}
-
-// Finalizar Pedido (Cliente)
-window.sendWhatsApp = function(cart) {
-    // Incrementa contador no Banco de Dados
-    const ordersRef = ref(db, 'orderCount');
-    onValue(ordersRef, (snapshot) => {
-        const currentCount = snapshot.val() || 0;
-        set(ref(db, 'orderCount'), currentCount + 1);
-    }, { onlyOnce: true });
-
-    // Lógica do WhatsApp (igual ao anterior)
-    // ... código de envio de mensagem ...
-}
-
-// Iniciar
-carregarProdutos();
-carregarMetricas();
-import { getDatabase, ref, push, set, runTransaction } 
-from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-
-window.sendWhatsApp = async function() {
-    if (cart.length === 0) return alert("Carrinho vazio!");
-
-    // 1. Incrementar o contador de pedidos de forma segura no Banco (Transação)
-    const orderCountRef = ref(db, 'orderCount');
-    await runTransaction(orderCountRef, (currentValue) => {
-        return (currentValue || 0) + 1;
-    });
-
-    // 2. Salvar o log do pedido para o ADM ver o histórico depois
-    const historicoRef = ref(db, 'historico_pedidos');
-    push(historicoRef, {
-        itens: cart,
-        total: cart.reduce((acc, item) => acc + item.price, 0),
-        data: new Date().toISOString()
-    });
-
-    // 3. Gerar link do WhatsApp
-    let texto = "🔥 *Novo Pedido - Espetinho* 🔥\n\n";
-    cart.forEach(item => texto += `• ${item.name} - R$ ${item.price.toFixed(2)}\n`);
-    
-    const fone = "5517996359526"; // Seu número
-    window.open(`https://api.whatsapp.com/send?phone=${fone}&text=${encodeURIComponent(texto)}`);
-    
-    cart = []; 
-    document.getElementById('cart-count').innerText = 0;
 };
-// No sucesso do login
-localStorage.setItem('auth_persistence', 'true');
-localStorage.setItem('login_time', Date.now());
+
+window.deleteProduct = function(id) {
+    if(confirm("Remover este item?")) {
+        remove(ref(db, `produtos/${id}`));
+    }
+};
+
+window.logout = function() {
+    localStorage.removeItem('auth');
+    localStorage.removeItem('auth_persistence');
+    window.location.href = 'admin.html';
+};
+
+// --- INICIALIZAÇÃO E ESCUTA DO BANCO ---
+
+const productsRef = ref(db, 'produtos');
+onValue(productsRef, (snapshot) => {
+    const data = snapshot.val();
+    const lista = data ? Object.keys(data).map(key => ({ id: key, ...data[key] })) : [];
+    
+    if (document.getElementById('menu-container')) renderCustomerMenu(lista);
+    if (document.getElementById('admin-menu-list')) renderAdminDashboard(lista);
+});
+
+const ordersRef = ref(db, 'orderCount');
+onValue(ordersRef, (snapshot) => {
+    const totalElem = document.getElementById('total-orders');
+    if (totalElem) totalElem.innerText = snapshot.val() || 0;
+});
