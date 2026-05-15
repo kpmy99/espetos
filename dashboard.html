@@ -1,3 +1,10 @@
+<script>
+    const isAuth = localStorage.getItem('auth_persistence');
+    // Expira em 24 horas (opcional)
+    if (!isAuth) {
+        window.location.href = 'admin.html';
+    }
+</script>
 <!-- Proteção simples: Se não estiver logado, volta para o login -->
 <script>
     if(localStorage.getItem('auth') !== 'true') window.location.href = 'admin.html';
