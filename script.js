@@ -12,8 +12,11 @@ function renderCustomerMenu() {
     const container = document.getElementById('menu-container');
     container.innerHTML = products.map(p => `
         <div class="product-card">
-            <span>${p.name} - R$ ${p.price.toFixed(2)}</span>
-            <button onclick="addToCart('${p.name}', ${p.price})">Adicionar</button>
+            <div class="product-info">
+                <h3>${p.name}</h3>
+                <span>R$ ${p.price.toFixed(2)}</span>
+            </div>
+            <button class="btn-add" onclick="addToCart('${p.name}', ${p.price})">Adicionar</button>
         </div>
     `).join('');
 }
