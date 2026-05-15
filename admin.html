@@ -42,24 +42,26 @@
         <p id="erro" style="color: red; display: none; font-size: 14px; margin-top: 10px;">Dados incorretos!</p>
     </div>
 
-    <script>
-        function validarLogin() {
-            const usuarioCorreto = "admin"; // Defina seu usuário aqui
-            const senhaCorreta = "123456";  // Defina sua senha aqui
+   <script>
+    function validarLogin() {
+        const usuarioCorreto = "admin"; 
+        const senhaCorreta = "123456";  
 
-            const userIn = document.getElementById('user').value;
-            const passIn = document.getElementById('pass').value;
-            const erroMsg = document.getElementById('erro');
+        const userIn = document.getElementById('user').value;
+        const passIn = document.getElementById('pass').value;
+        const erroMsg = document.getElementById('erro');
 
-            if (userIn === usuarioCorreto && passIn === senhaCorreta) {
-                // SESSÃO: Salva que o usuário está autenticado
-                localStorage.setItem('auth', 'true');
-                // Redireciona para o Dashboard
-                window.location.href = 'dashboard.html';
-            } else {
-                erroMsg.style.display = 'block';
-            }
+        if (userIn === usuarioCorreto && passIn === senhaCorreta) {
+            // Criamos as duas chaves para garantir que ambas as "trancas" do dashboard aceitem
+            localStorage.setItem('auth', 'true');
+            localStorage.setItem('auth_persistence', 'true');
+            
+            // Redireciona para o Dashboard
+            window.location.href = 'dashboard.html';
+        } else {
+            erroMsg.style.display = 'block';
         }
-    </script>
+    }
+</script>
 </body>
 </html>
