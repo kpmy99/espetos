@@ -1,10 +1,172 @@
-body { font-family: sans-serif; background: #f4f4f4; margin: 0; padding: 20px; }
-.product-card, .admin-item { 
-    background: white; padding: 15px; margin-bottom: 10px; 
-    border-radius: 8px; display: flex; justify-content: space-between; align-items: center;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+/* Configurações Gerais e Cores */
+:root {
+    --primary: #d32f2f;       /* Vermelho Brasa */
+    --primary-dark: #b71c1c;
+    --accent: #ff9800;        /* Laranja Fogo */
+    --bg: #fdfdfd;            /* Fundo Limpo */
+    --text-dark: #2d2d2d;
+    --text-light: #757575;
+    --white: #ffffff;
+    --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
-header { text-align: center; color: #d32f2f; }
-button { background: #25d366; color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer; }
-.card { background: #fff; padding: 20px; display: inline-block; border-left: 5px solid #d32f2f; }
-#cart-summary { position: fixed; bottom: 0; left: 0; width: 100%; background: #fff; padding: 15px; text-align: center; border-top: 1px solid #ddd; }
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+body {
+    background-color: var(--bg);
+    color: var(--text-dark);
+    line-height: 1.6;
+}
+
+/* Header */
+header {
+    background-color: var(--white);
+    padding: 30px 20px;
+    text-align: center;
+    border-bottom: 2px solid var(--primary);
+    margin-bottom: 20px;
+    box-shadow: var(--shadow);
+}
+
+header h1 {
+    color: var(--primary);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-size: 1.8rem;
+}
+
+header p {
+    color: var(--text-light);
+    font-size: 0.9rem;
+}
+
+/* Container Principal */
+main, section {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Cards de Produtos (Cliente e ADM) */
+.product-card, .admin-item {
+    background: var(--white);
+    border-radius: 12px;
+    padding: 15px 20px;
+    margin-bottom: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: var(--shadow);
+    transition: transform 0.2s;
+}
+
+.product-card:hover {
+    transform: translateY(-2px);
+}
+
+.product-info h3 {
+    font-size: 1.1rem;
+    color: var(--text-dark);
+}
+
+.product-info span {
+    color: var(--primary-dark);
+    font-weight: bold;
+    display: block;
+    margin-top: 5px;
+}
+
+/* Botões */
+button {
+    cursor: pointer;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-weight: 600;
+    transition: 0.3s;
+}
+
+.btn-add {
+    background-color: var(--primary);
+    color: white;
+}
+
+.btn-add:hover {
+    background-color: var(--primary-dark);
+}
+
+.btn-remove {
+    background-color: #ffebee;
+    color: var(--primary-dark);
+    font-size: 0.8rem;
+}
+
+/* Rodapé/Carrinho Fixo */
+#cart-summary {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: var(--white);
+    padding: 15px 20px;
+    box-shadow: 0 -4px 15px rgba(0,0,0,0.1);
+    display: flex;
+    justify-content: center;
+}
+
+.btn-whatsapp {
+    background-color: #25d366;
+    color: white;
+    width: 100%;
+    max-width: 400px;
+    padding: 15px;
+    font-size: 1.1rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    text-transform: uppercase;
+}
+
+/* Estilo do Dashboard e Formulários */
+.metrics {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.card {
+    background: var(--primary);
+    color: white;
+    padding: 20px;
+    border-radius: 12px;
+    text-align: center;
+}
+
+.card h3 { font-size: 0.9rem; opacity: 0.9; }
+.card p { font-size: 2rem; font-weight: bold; }
+
+input {
+    width: 100%;
+    padding: 12px;
+    margin: 8px 0;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    outline: none;
+}
+
+input:focus {
+    border-color: var(--primary);
+}
+
+/* Responsividade */
+@media (max-width: 480px) {
+    header h1 { font-size: 1.5rem; }
+    main { padding: 10px; }
+}
