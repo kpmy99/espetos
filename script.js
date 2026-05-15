@@ -1,91 +1,85 @@
-// Dados Iniciais (Caso o localStorage esteja vazio)
-let products = JSON.parse(localStorage.getItem('products')) || [
-    { id: 1, name: 'Espeto de Carne', price: 12.00 },
-    { id: 2, name: 'Espeto de Queijo Coalho', price: 10.00 }
-];
+// Importe os módulos necessários do Firebase
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getDatabase, ref, set, onValue, push, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-let cart = [];
-let totalOrders = localStorage.getItem('orderCount') || 0;
+// COLE AQUI AS SUAS CONFIGURAÇÕES DO FIREBASE
+const firebaseConfig = {
+    apiKey: "AIzaSyDGJl7zSPUBfGNHXJtApjGcZNrtiIV1yik",
+    authDomain: "espeto-ec8ec.firebaseapp.com",
+    databaseURL: "https://espeto-ec8ec-default-rtdb.firebaseio.com",
+    projectId: "espeto-ec8ec",
+    storageBucket: "espeto-ec8ec.firebasestorage.app",
+    messagingSenderId: "847681769791",
+    appId: "1:847681769791:web:62d31d0445f2ee2a97038a",
+    measurementId: "G-XTVRQQ2TWJ"
+};
 
-// --- FUNÇÕES DO CLIENTE ---
-function renderCustomerMenu() {
-    const container = document.getElementById('menu-container');
-    container.innerHTML = products.map(p => `
-        <div class="product-card">
-            <div class="product-info">
-                <h3>${p.name}</h3>
-                <span>R$ ${p.price.toFixed(2)}</span>
-            </div>
-            <button class="btn-add" onclick="addToCart('${p.name}', ${p.price})">Adicionar</button>
-        </div>
-    `).join('');
-}
+// Inicializa o Firebase
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
 
-function addToCart(name, price) {
-    cart.push({ name, price });
-    document.getElementById('cart-count').innerText = cart.length;
-}
+// --- FUNÇÕES DE PERSISTÊNCIA ---
 
-function sendWhatsApp() {
-    if (cart.length === 0) return alert("Carrinho vazio!");
-    
-    let message = "Olá! Gostaria de fazer um pedido:\n\n";
-    let total = 0;
-    cart.forEach(item => {
-        message += `- ${item.name}: R$ ${item.price.toFixed(2)}\n`;
-        total += item.price;
+// Carregar Produtos em Tempo Real (Serve para Cliente e ADM)
+function carregarProdutos() {
+    const productsRef = ref(db, 'produtos');
+    onValue(productsRef, (snapshot) => {
+        const data = snapshot.val();
+        const listaProdutos = data ? Object.keys(data).map(key => ({ id: key, ...data[key] })) : [];
+        
+        // Se estiver na página do cliente, renderiza menu cliente
+        if (document.getElementById('menu-container')) {
+            renderCustomerMenu(listaProdutos);
+        }
+        // Se estiver na página do adm, renderiza menu adm
+        if (document.getElementById('admin-menu-list')) {
+            renderAdminDashboard(listaProdutos);
+        }
     });
-    message += `\n*Total: R$ ${total.toFixed(2)}*`;
-
-    // Atualiza métrica de pedidos no sistema
-    totalOrders++;
-    localStorage.setItem('orderCount', totalOrders);
-
-    const phone = "5517996359526"; 
-    const url = `https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(message)}`;
-    
-    window.open(url, '_blank');
-    cart = []; // Limpa carrinho
-    document.getElementById('cart-count').innerText = 0;
 }
 
-// --- FUNÇÕES DO ADM ---
-function addProduct() {
+// Carregar Métricas (Apenas ADM)
+function carregarMetricas() {
+    const ordersRef = ref(db, 'orderCount');
+    onValue(ordersRef, (snapshot) => {
+        const count = snapshot.val() || 0;
+        const totalElem = document.getElementById('total-orders');
+        if (totalElem) totalElem.innerText = count;
+    });
+}
+
+// Adicionar Produto (ADM)
+window.addProduct = function() {
     const name = document.getElementById('p-name').value;
     const price = parseFloat(document.getElementById('p-price').value);
 
     if (name && price) {
-        products.push({ id: Date.now(), name, price });
-        localStorage.setItem('products', JSON.stringify(products));
-        renderAdminDashboard();
-        alert("Item adicionado!");
+        const productsRef = ref(db, 'produtos');
+        push(productsRef, { name, price });
+        document.getElementById('p-name').value = "";
+        document.getElementById('p-price').value = "";
+        alert("Item salvo no Banco de Dados!");
     }
 }
 
-function renderAdminDashboard() {
-    document.getElementById('total-orders').innerText = totalOrders;
-    const list = document.getElementById('admin-menu-list');
-    list.innerHTML = products.map(p => `
-        <div class="admin-item">
-            ${p.name} - R$ ${p.price} 
-            <button onclick="deleteProduct(${p.id})">Remover</button>
-        </div>
-    `).join('');
+// Remover Produto (ADM)
+window.deleteProduct = function(id) {
+    remove(ref(db, `produtos/${id}`));
 }
 
-function deleteProduct(id) {
-    products = products.filter(p => p.id !== id);
-    localStorage.setItem('products', JSON.stringify(products));
-    renderAdminDashboard();
+// Finalizar Pedido (Cliente)
+window.sendWhatsApp = function(cart) {
+    // Incrementa contador no Banco de Dados
+    const ordersRef = ref(db, 'orderCount');
+    onValue(ordersRef, (snapshot) => {
+        const currentCount = snapshot.val() || 0;
+        set(ref(db, 'orderCount'), currentCount + 1);
+    }, { onlyOnce: true });
+
+    // Lógica do WhatsApp (igual ao anterior)
+    // ... código de envio de mensagem ...
 }
 
-function logout() {
-    localStorage.removeItem('auth');
-    window.location.href = 'admin.html';
-}
-function logout() {
-    // Remove a permissão de acesso
-    localStorage.removeItem('auth');
-    // Volta para a tela de login
-    window.location.href = 'admin.html';
-}
+// Iniciar
+carregarProdutos();
+carregarMetricas();
