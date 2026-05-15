@@ -83,3 +83,33 @@ window.sendWhatsApp = function(cart) {
 // Iniciar
 carregarProdutos();
 carregarMetricas();
+import { getDatabase, ref, push, set, runTransaction } 
+from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+window.sendWhatsApp = async function() {
+    if (cart.length === 0) return alert("Carrinho vazio!");
+
+    // 1. Incrementar o contador de pedidos de forma segura no Banco (Transação)
+    const orderCountRef = ref(db, 'orderCount');
+    await runTransaction(orderCountRef, (currentValue) => {
+        return (currentValue || 0) + 1;
+    });
+
+    // 2. Salvar o log do pedido para o ADM ver o histórico depois
+    const historicoRef = ref(db, 'historico_pedidos');
+    push(historicoRef, {
+        itens: cart,
+        total: cart.reduce((acc, item) => acc + item.price, 0),
+        data: new Date().toISOString()
+    });
+
+    // 3. Gerar link do WhatsApp
+    let texto = "🔥 *Novo Pedido - Espetinho* 🔥\n\n";
+    cart.forEach(item => texto += `• ${item.name} - R$ ${item.price.toFixed(2)}\n`);
+    
+    const fone = "5517996359526"; // Seu número
+    window.open(`https://api.whatsapp.com/send?phone=${fone}&text=${encodeURIComponent(texto)}`);
+    
+    cart = []; 
+    document.getElementById('cart-count').innerText = 0;
+};
