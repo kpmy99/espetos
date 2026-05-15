@@ -113,3 +113,6 @@ window.sendWhatsApp = async function() {
     cart = []; 
     document.getElementById('cart-count').innerText = 0;
 };
+// No sucesso do login
+localStorage.setItem('auth_persistence', 'true');
+localStorage.setItem('login_time', Date.now());
