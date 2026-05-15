@@ -1,14 +1,3 @@
-<script>
-    const isAuth = localStorage.getItem('auth_persistence');
-    // Expira em 24 horas (opcional)
-    if (!isAuth) {
-        window.location.href = 'admin.html';
-    }
-</script>
-<!-- Proteção simples: Se não estiver logado, volta para o login -->
-<script>
-    if(localStorage.getItem('auth') !== 'true') window.location.href = 'admin.html';
-</script>
 
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -16,6 +5,12 @@
     <meta charset="UTF-8">
     <title>Dashboard ADM</title>
     <link rel="stylesheet" href="style.css">
+    <script>
+        // Se NÃO houver auth, volta para o login imediatamente
+        if (localStorage.getItem('auth') !== 'true') {
+            window.location.href = 'admin.html';
+        }
+    </script>
 </head>
 <body>
     <nav>
