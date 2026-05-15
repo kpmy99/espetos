@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cardápio Digital - Espetinho</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>Espeto do Chefe</h1>
+        <p>Faça seu pedido e finalize no WhatsApp</p>
+    </header>
+
+    <main id="menu-container">
+        <!-- Os produtos serão carregados aqui via JS -->
+    </main>
+
+    <footer id="cart-summary">
+        <button onclick="sendWhatsApp()">Finalizar Pedido (<span id="cart-count">0</span>)</button>
+    </footer>
+
+    <script src="script.js"></script>
+    <script>
+        // Carrega itens ao abrir
+        window.onload = renderCustomerMenu;
+    </script>
+</body>
+</html>

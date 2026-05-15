@@ -1,0 +1,41 @@
+<!-- Proteção simples: Se não estiver logado, volta para o login -->
+<script>
+    if(localStorage.getItem('auth') !== 'true') window.location.href = 'admin.html';
+</script>
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard ADM</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav>
+        <h2>Painel de Controle</h2>
+        <button onclick="logout()">Sair</button>
+    </nav>
+
+    <section class="metrics">
+        <div class="card">
+            <h3>Total de Pedidos</h3>
+            <p id="total-orders">0</p>
+        </div>
+    </section>
+
+    <section class="management">
+        <h3>Adicionar Novo Item</h3>
+        <input type="text" id="p-name" placeholder="Nome do Espeto">
+        <input type="number" id="p-price" placeholder="Preço">
+        <button onclick="addProduct()">Salvar Item</button>
+    </section>
+
+    <section>
+        <h3>Itens Atuais</h3>
+        <div id="admin-menu-list"></div>
+    </section>
+
+    <script src="script.js"></script>
+    <script>window.onload = renderAdminDashboard;</script>
+</body>
+</html>

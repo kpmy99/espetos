@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Administrativo</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .login-container {
+            max-width: 300px;
+            margin: 100px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        .btn-login {
+            width: 100%;
+            background-color: #d32f2f;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-container">
+        <h2>Acesso ADM</h2>
+        <input type="text" id="user" placeholder="Usuário">
+        <input type="password" id="pass" placeholder="Senha">
+        <button class="btn-login" onclick="validarLogin()">Entrar</button>
+        <p id="erro" style="color: red; display: none; font-size: 14px; margin-top: 10px;">Dados incorretos!</p>
+    </div>
+
+    <script>
+        function validarLogin() {
+            const usuarioCorreto = "admin"; // Defina seu usuário aqui
+            const senhaCorreta = "123456";  // Defina sua senha aqui
+
+            const userIn = document.getElementById('user').value;
+            const passIn = document.getElementById('pass').value;
+            const erroMsg = document.getElementById('erro');
+
+            if (userIn === usuarioCorreto && passIn === senhaCorreta) {
+                // SESSÃO: Salva que o usuário está autenticado
+                localStorage.setItem('auth', 'true');
+                // Redireciona para o Dashboard
+                window.location.href = 'dashboard.html';
+            } else {
+                erroMsg.style.display = 'block';
+            }
+        }
+    </script>
+</body>
+</html>
